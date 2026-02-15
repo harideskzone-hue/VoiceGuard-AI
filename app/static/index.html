@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoiceGuard AI | Deepfake Voice Detection Platform</title>
+    <meta name="description"
+        content="AI-powered voice authentication system detecting deepfake audio across Tamil, English, Hindi, Malayalam and Telugu.">
+    <link rel="stylesheet" href="/static/style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Animated Background -->
+    <canvas id="bgCanvas"></canvas>
+    <div class="noise-overlay"></div>
+
+    <div class="app-container">
+        <!-- Top Navigation -->
+        <nav class="topbar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                        <line x1="12" y1="19" x2="12" y2="23" />
+                        <line x1="8" y1="23" x2="16" y2="23" />
+                    </svg>
+                </div>
+                <span class="brand-name">VOICE<span class="accent">GUARD</span></span>
+                <span class="brand-tag">AI</span>
+            </div>
+            <div class="nav-right">
+                <div class="status-pill online">
+                    <span class="status-dot"></span>
+                    <span>MODEL ACTIVE</span>
+                </div>
+                <div class="nav-lang">
+                    <select id="languageSelect">
+                        <option value="Tamil">🇮🇳 Tamil</option>
+                        <option value="English" selected>🇬🇧 English</option>
+                        <option value="Hindi">🇮🇳 Hindi</option>
+                        <option value="Malayalam">🇮🇳 Malayalam</option>
+                        <option value="Telugu">🇮🇳 Telugu</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-grid">
+            <!-- Left Panel: Input -->
+            <section class="panel input-panel">
+                <div class="panel-header">
+                    <h2>Audio Input</h2>
+                    <span class="badge">LIVE</span>
+                </div>
+
+                <!-- Waveform Visualizer -->
+                <div class="visualizer-wrap">
+                    <canvas id="visualizer"></canvas>
+                    <div class="viz-overlay" id="vizOverlay">
+                        <div class="pulse-ring"></div>
+                        <span>READY FOR INPUT</span>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="input-controls">
+                    <button id="recordBtn" class="btn-record">
+                        <div class="btn-record-inner">
+                            <svg class="mic-icon" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                            </svg>
+                            <span class="btn-label" id="recordLabel">START RECORDING</span>
+                        </div>
+                    </button>
+                    <div class="upload-zone" id="dropZone">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="17 8 12 3 7 8" />
+                            <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
+                        <span>Drop audio file or <u>browse</u></span>
+                        <input type="file" id="fileInput" accept="audio/*" hidden>
+                    </div>
+                </div>
+
+                <!-- Quick Demo Samples -->
+                <div class="demo-section">
+                    <div class="panel-header small">
+                        <h3>Quick Demo Samples</h3>
+                    </div>
+                    <div class="demo-buttons">
+                        <button class="demo-btn human-demo" id="demoHuman">
+                            <span>✅</span> Generate Human Sample
+                        </button>
+                        <button class="demo-btn ai-demo" id="demoAI">
+                            <span>🤖</span> Generate AI Sample
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent History -->
+                <div class="history-section">
+                    <div class="panel-header small">
+                        <h3>Recent Analyses</h3>
+                        <span class="counter" id="totalCount">0</span>
+                    </div>
+                    <div class="history-list" id="historyList">
+                        <div class="history-empty">No analyses yet. Record or upload audio to begin.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Results -->
+            <section class="panel result-panel">
+                <div class="panel-header">
+                    <h2>Analysis Result</h2>
+                    <span class="badge secondary" id="methodBadge">--</span>
+                </div>
+
+                <!-- Awaiting State -->
+                <div class="awaiting-state" id="awaitingState">
+                    <div class="awaiting-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.5" opacity="0.3">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                    </div>
+                    <p>Awaiting audio input for analysis</p>
+                    <span class="awaiting-sub">Record your voice or upload a file to detect deepfakes</span>
+                </div>
+
+                <!-- Loading State -->
+                <div class="analyzing-state hidden" id="analyzingState">
+                    <div class="dna-loader">
+                        <div class="dna-strand"></div>
+                        <div class="dna-strand"></div>
+                        <div class="dna-strand"></div>
+                        <div class="dna-strand"></div>
+                        <div class="dna-strand"></div>
+                    </div>
+                    <p class="analyzing-text">Analyzing voice patterns...</p>
+                    <span class="analyzing-sub">Extracting MFCCs, spectral features & pitch variance</span>
+                </div>
+
+                <!-- Result State -->
+                <div class="result-state hidden" id="resultState">
+                    <!-- Verdict -->
+                    <div class="verdict-card" id="verdictCard">
+                        <div class="verdict-icon" id="verdictIcon"></div>
+                        <div class="verdict-info">
+                            <div class="verdict-label">CLASSIFICATION</div>
+                            <div class="verdict-value" id="classification">--</div>
+                        </div>
+                        <div class="confidence-ring-wrap">
+                            <svg class="confidence-ring" width="100" height="100" viewBox="0 0 100 100">
+                                <circle class="ring-bg" cx="50" cy="50" r="42" fill="none" stroke-width="6" />
+                                <circle class="ring-progress" id="ringProgress" cx="50" cy="50" r="42" fill="none"
+                                    stroke-width="6" stroke-dasharray="263.89" stroke-dashoffset="263.89" />
+                            </svg>
+                            <div class="ring-text">
+                                <span class="ring-score" id="confidenceScore">0</span>
+                                <span class="ring-label">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Explanation -->
+                    <div class="explanation-card">
+                        <div class="explanation-header">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="16" x2="12" y2="12" />
+                                <line x1="12" y1="8" x2="12.01" y2="8" />
+                            </svg>
+                            <span>Explanation</span>
+                        </div>
+                        <p id="explanationText"></p>
+                    </div>
+
+                    <!-- Pipeline Detail Bars -->
+                    <div class="pipeline-detail" id="pipelineDetail">
+                        <div class="pipeline-header">Pipeline Scores</div>
+                        <div class="pipeline-bar-wrap">
+                            <div class="pipeline-label">SOTA Model</div>
+                            <div class="pipeline-bar">
+                                <div class="pipeline-fill sota" id="sotaBar" style="width: 0%"></div>
+                            </div>
+                            <span class="pipeline-score" id="sotaScoreText">--</span>
+                        </div>
+                        <div class="pipeline-bar-wrap">
+                            <div class="pipeline-label">Heuristic</div>
+                            <div class="pipeline-bar">
+                                <div class="pipeline-fill heuristic" id="heuristicBar" style="width: 0%"></div>
+                            </div>
+                            <span class="pipeline-score" id="heuristicScoreText">--</span>
+                        </div>
+                        <div class="pipeline-bar-wrap">
+                            <div class="pipeline-label">Final</div>
+                            <div class="pipeline-bar">
+                                <div class="pipeline-fill final" id="finalBar" style="width: 0%"></div>
+                            </div>
+                            <span class="pipeline-score" id="finalScoreText">--</span>
+                        </div>
+                        <div class="pipeline-model" id="modelNameText"></div>
+                    </div>
+
+                    <!-- Stats Row -->
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <span class="stat-value" id="latencyValue">--</span>
+                            <span class="stat-label">LATENCY (ms)</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="langValue">--</span>
+                            <span class="stat-label">LANGUAGE</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="timeValue">--</span>
+                            <span class="stat-label">TIMESTAMP</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-left">
+                <span>Powered by <strong>XLS-R Multilingual</strong> • PyTorch • FastAPI</span>
+            </div>
+            <div class="footer-right">
+                <span class="footer-badge">🇮🇳 India AI Impact Buildathon 2026</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+
+</html>

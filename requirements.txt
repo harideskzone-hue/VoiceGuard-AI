@@ -1,0 +1,26 @@
+# Web Framework (Essential)
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+python-multipart==0.0.6
+
+# ML & Audio Processing
+torch>=2.2.0
+torchaudio>=2.2.0
+librosa==0.10.1
+soundfile==0.12.1
+numpy==1.26.3
+scipy>=1.10.0
+transformers>=4.35.0  # For pre-trained deepfake models
+scikit-learn==1.4.0
+
+# Utilities
+python-dotenv==1.0.0
+aiofiles==23.2.1
+
+# Production
+gunicorn==21.2.0
+
+# Testing
+pytest==7.4.3
+httpx==0.26.0

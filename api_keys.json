@@ -8,5 +8,25 @@
     "created_by": "dashboard",
     "active": true,
     "usage_count": 1
+  },
+  "vg_fbcbb71139feb28e8d363940ae76453a": {
+    "id": "61940f28",
+    "name": "Judge-Demo",
+    "key": "vg_fbcbb71139feb28e8d363940ae76453a",
+    "key_preview": "vg_fbcb...453a",
+    "created_at": "2026-02-16T13:39:58.685173",
+    "created_by": "dashboard",
+    "active": true,
+    "usage_count": 0
+  },
+  "vg_d94c7781ff02484d6d4f10e27e9a47e3": {
+    "id": "b1552b0c",
+    "name": "6278",
+    "key": "vg_d94c7781ff02484d6d4f10e27e9a47e3",
+    "key_preview": "vg_d94c...47e3",
+    "created_at": "2026-02-16T13:41:19.497302",
+    "created_by": "dashboard",
+    "active": true,
+    "usage_count": 0
   }
 }

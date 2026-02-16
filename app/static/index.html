@@ -50,6 +50,127 @@
             </div>
         </nav>
 
+        <!-- Tab Navigation -->
+        <div class="tab-nav">
+            <button class="tab-btn active" id="tabDashboard" onclick="switchTab('dashboard')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                </svg>
+                Voice Detection
+            </button>
+            <button class="tab-btn" id="tabApiKeys" onclick="switchTab('apikeys')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+                </svg>
+                API Keys
+            </button>
+        </div>
+
+        <!-- API Key Manager Panel (Hidden by default) -->
+        <div class="api-keys-panel hidden" id="apiKeysPanel">
+            <div class="api-keys-grid">
+                <!-- Generate Key Section -->
+                <section class="panel api-key-create">
+                    <div class="panel-header">
+                        <h2>Generate API Key</h2>
+                        <span class="badge">NEW</span>
+                    </div>
+                    <p class="api-key-desc">Create API keys for external users and hackathon judges to access the
+                        VoiceGuard AI detection endpoint.</p>
+
+                    <div class="key-form">
+                        <input type="text" id="keyNameInput" placeholder="Key name (e.g. Judge-1, External-App)"
+                            class="key-input" />
+                        <button id="generateKeyBtn" class="btn-generate" onclick="generateNewKey()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19" />
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                            Generate Key
+                        </button>
+                    </div>
+
+                    <!-- Newly Generated Key Display -->
+                    <div class="new-key-display hidden" id="newKeyDisplay">
+                        <div class="new-key-header">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                            </svg>
+                            <span>New API Key Created — Copy it now!</span>
+                        </div>
+                        <div class="key-value-row">
+                            <code id="newKeyValue" class="key-code"></code>
+                            <button class="btn-copy" onclick="copyKey()">📋 Copy</button>
+                        </div>
+                        <p class="key-warning">⚠️ This key won't be shown again. Save it securely.</p>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="key-stats">
+                        <div class="key-stat">
+                            <span class="stat-number" id="totalKeysCount">0</span>
+                            <span class="stat-desc">Total Keys</span>
+                        </div>
+                        <div class="key-stat">
+                            <span class="stat-number" id="activeKeysCount">0</span>
+                            <span class="stat-desc">Active</span>
+                        </div>
+                        <div class="key-stat">
+                            <span class="stat-number" id="totalApiCalls">0</span>
+                            <span class="stat-desc">API Calls</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Key List Section -->
+                <section class="panel api-key-list">
+                    <div class="panel-header">
+                        <h2>Active Keys</h2>
+                        <button class="btn-refresh" onclick="loadApiKeys()">🔄 Refresh</button>
+                    </div>
+                    <div class="keys-table" id="keysTable">
+                        <div class="key-row header-row">
+                            <span>Name</span>
+                            <span>Key Preview</span>
+                            <span>Created</span>
+                            <span>Usage</span>
+                            <span>Status</span>
+                            <span></span>
+                        </div>
+                        <!-- Master Key Row -->
+                        <div class="key-row master-row">
+                            <span class="key-name">🔑 Master Key</span>
+                            <span class="key-preview"><code>your-sup...this</code></span>
+                            <span class="key-date">Built-in</span>
+                            <span class="key-usage">∞</span>
+                            <span class="key-status active">Active</span>
+                            <span>—</span>
+                        </div>
+                        <div id="generatedKeysList"></div>
+                    </div>
+
+                    <!-- API Usage Guide -->
+                    <div class="api-usage-guide">
+                        <h3>📖 How to Use Your API Key</h3>
+                        <div class="code-block">
+                            <pre><code>curl -X POST https://YOUR_URL/api/voice-detection \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -d '{
+    "language": "English",
+    "audioFormat": "mp3",
+    "audioBase64": "BASE64_ENCODED_AUDIO"
+  }'</code></pre>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
         <!-- Main Content -->
         <main class="main-grid">
             <!-- Left Panel: Input -->
@@ -245,6 +366,112 @@
         </footer>
     </div>
 
+    <script>
+        // ===== Tab Switching =====
+        function switchTab(tab) {
+            const dashboard = document.querySelector('.main-grid');
+            const apiPanel = document.getElementById('apiKeysPanel');
+            const tabDashboard = document.getElementById('tabDashboard');
+            const tabApiKeys = document.getElementById('tabApiKeys');
+
+            if (tab === 'dashboard') {
+                dashboard.classList.remove('hidden');
+                apiPanel.classList.add('hidden');
+                tabDashboard.classList.add('active');
+                tabApiKeys.classList.remove('active');
+            } else {
+                dashboard.classList.add('hidden');
+                apiPanel.classList.remove('hidden');
+                tabDashboard.classList.remove('active');
+                tabApiKeys.classList.add('active');
+                loadApiKeys();
+            }
+        }
+
+        // ===== Generate API Key =====
+        async function generateNewKey() {
+            const nameInput = document.getElementById('keyNameInput');
+            const name = nameInput.value.trim();
+            if (!name) { alert('Please enter a key name'); return; }
+
+            try {
+                const res = await fetch('/api/keys/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    // Show the new key
+                    const display = document.getElementById('newKeyDisplay');
+                    const keyValue = document.getElementById('newKeyValue');
+                    keyValue.textContent = data.key.key;
+                    display.classList.remove('hidden');
+                    nameInput.value = '';
+                    loadApiKeys();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to generate key'));
+                }
+            } catch (err) {
+                alert('Failed to generate key: ' + err.message);
+            }
+        }
+
+        // ===== Copy Key =====
+        function copyKey() {
+            const keyText = document.getElementById('newKeyValue').textContent;
+            navigator.clipboard.writeText(keyText).then(() => {
+                const btn = document.querySelector('.btn-copy');
+                btn.textContent = '✅ Copied!';
+                setTimeout(() => { btn.textContent = '📋 Copy'; }, 2000);
+            });
+        }
+
+        // ===== Load API Keys =====
+        async function loadApiKeys() {
+            try {
+                const res = await fetch('/api/keys');
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    // Update stats
+                    document.getElementById('totalKeysCount').textContent = data.stats.total_keys;
+                    document.getElementById('activeKeysCount').textContent = data.stats.active_keys;
+                    document.getElementById('totalApiCalls').textContent = data.stats.total_api_calls;
+
+                    // Update key list
+                    const list = document.getElementById('generatedKeysList');
+                    list.innerHTML = '';
+
+                    data.keys.forEach(key => {
+                        const row = document.createElement('div');
+                        row.className = 'key-row' + (key.active ? '' : ' revoked');
+                        row.innerHTML = `
+                        <span class="key-name">🔐 ${key.name}</span>
+                        <span class="key-preview"><code>${key.key_preview}</code></span>
+                        <span class="key-date">${new Date(key.created_at).toLocaleDateString()}</span>
+                        <span class="key-usage">${key.usage_count}</span>
+                        <span class="key-status ${key.active ? 'active' : 'revoked'}">${key.active ? 'Active' : 'Revoked'}</span>
+                        <span>${key.active ? '<button class="btn-revoke" onclick="revokeApiKey(\'' + key.id + '\')">Revoke</button>' : '—'}</span>
+                    `;
+                        list.appendChild(row);
+                    });
+                }
+            } catch (err) {
+                console.error('Failed to load keys:', err);
+            }
+        }
+
+        // ===== Revoke Key =====
+        async function revokeApiKey(keyId) {
+            if (!confirm('Revoke this API key? It will no longer be able to access the API.')) return;
+            try {
+                await fetch('/api/keys/' + keyId, { method: 'DELETE' });
+                loadApiKeys();
+            } catch (err) { alert('Failed to revoke key'); }
+        }
+    </script>
     <script src="/static/script.js"></script>
 </body>
 

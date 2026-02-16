@@ -217,15 +217,15 @@ def ml_ensemble(sota_score: float = None,
     # Define base weights — SOTA is the strongest model for real speech
     if sota_score is not None:
         scores['SOTA'] = sota_score
-        weights['SOTA'] = 0.50  # Primary: pre-trained wav2vec2 deepfake detector
+        weights['SOTA'] = 0.70  # Primary: Increased to 70% as it's the only pre-trained model
     
     if cnn_score is not None:
         scores['CNN'] = cnn_score
-        weights['CNN'] = 0.25   # Secondary: spectrogram visual patterns
+        weights['CNN'] = 0.15   # Secondary: Reduced to 15% (untrained bias mitigation)
     
     if mlp_score is not None:
         scores['MLP'] = mlp_score
-        weights['MLP'] = 0.25   # Tertiary: hand-crafted feature analysis
+        weights['MLP'] = 0.15   # Tertiary: Reduced to 15% (untrained bias mitigation)
     
     if not scores:
         return 0.5, "NO_MODELS"
